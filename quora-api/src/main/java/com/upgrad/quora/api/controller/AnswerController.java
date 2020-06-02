@@ -6,6 +6,7 @@ import com.upgrad.quora.service.business.AnswerService;
 import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.entity.Answer;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,15 +30,14 @@ public class AnswerController {
     private AuthenticationService authenticationService;
 
     @RequestMapping(method = RequestMethod.POST, path =  "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerResponse> answerCreate(final AnswerRequest answerRequest, @PathVariable("questionId") final Integer questionId, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException
-    {
+    public ResponseEntity<AnswerResponse> answerCreate(final AnswerRequest answerRequest, @PathVariable("questionId") final String questionId, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException, InvalidQuestionException {
             final Answer answer = new Answer();
             answer.setUuid(UUID.randomUUID().toString());
             answer.setAns(answerRequest.getAnswer());
             answer.setDate(ZonedDateTime.now());
-            answer.setQuestion_id(questionId);
+            answer.setQuestion_id(Integer.parseInt(questionId));
 
-        final Answer answerEntity = answerService.createAnswer(answer,authorization);
+        final Answer answerEntity = answerService.createAnswer(answer,questionId,authorization);
         AnswerResponse userResponse = new AnswerResponse().id(answerEntity.getUuid()).status("ANSWER CREATED");
         return new ResponseEntity<AnswerResponse>(userResponse, HttpStatus.CREATED);
     }

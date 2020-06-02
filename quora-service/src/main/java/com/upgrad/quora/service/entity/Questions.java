@@ -4,8 +4,12 @@ import javax.persistence.*;
 import java.time.ZonedDateTime;
 
 @Entity
-@Table(name = "question", schema = "quora")
-
+@Table(name = "question")
+@NamedQueries(
+        {
+                @NamedQuery(name = "questionById", query = "select u from UserEntity u where u.uuid = :uuid"),
+       }
+)
 public class Questions {
     public Integer getId() {
         return id;
