@@ -5,7 +5,10 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "answer")
-
+@NamedQueries({
+        @NamedQuery(name = "AnswerByUuid",
+                query = "select i from Answer i where i.uuid = :uuid")
+})
 public class Answer {
     @Id
     @Column(name = "ID")
