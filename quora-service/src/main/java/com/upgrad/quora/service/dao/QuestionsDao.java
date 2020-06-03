@@ -11,9 +11,10 @@ import javax.persistence.PersistenceContext;
 public class QuestionsDao {
     @PersistenceContext
     private EntityManager entityManager;
-    public Questions questionById(final String question_id) {
+    public Questions questionById(final String questionUuid) {
         try {
-            return entityManager.find(Questions.class, Integer.parseInt(question_id));
+            return entityManager.createNamedQuery("questionById", Questions.class)
+                    .setParameter("uuid", questionUuid).getSingleResult();
         } catch (NoResultException nre) {
             return null;
         }

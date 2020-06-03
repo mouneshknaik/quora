@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 @Controller
 public class AnswerController {
@@ -36,7 +38,7 @@ public class AnswerController {
             answer.setUuid(UUID.randomUUID().toString());
             answer.setAns(answerRequest.getAnswer());
             answer.setDate(ZonedDateTime.now());
-            answer.setQuestion_id(Integer.parseInt(questionId));
+            answer.setUuid(questionId);
 
         final Answer answerEntity = answerService.createAnswer(answer,questionId,authorization);
         AnswerResponse userResponse = new AnswerResponse().id(answerEntity.getUuid()).status("ANSWER CREATED");
@@ -60,5 +62,27 @@ public class AnswerController {
         AnswerDeleteResponse answerDeleteResponse=new AnswerDeleteResponse()
                 .id(answerEntity.getUuid()).status("ANSWER DELETED");
         return new ResponseEntity<AnswerDeleteResponse>(answerDeleteResponse,HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,path = "/answer/all/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswer(@RequestHeader("authorization") final String authorization,
+                                             @PathVariable("questionId") final String questionId) throws AuthorizationFailedException, AnswerNotFoundException, InvalidQuestionException {
+
+        List<Answer> answerList =answerService.getAllAnswer(questionId,authorization);
+        String questionContent=answerService.getQuestionContent(questionId);
+        return getListResponseEntity(answerList,questionContent);
+    }
+    private ResponseEntity<List<AnswerDetailsResponse>> getListResponseEntity(
+            List<Answer> answerList,String questionContent) {
+        List<AnswerDetailsResponse> ent = new ArrayList<AnswerDetailsResponse>();
+        for (Answer n : answerList) {
+            AnswerDetailsResponse answerDetailsResponse = new AnswerDetailsResponse();
+            answerDetailsResponse.id(n.getUuid());
+            answerDetailsResponse.answerContent(n.getAns());
+            answerDetailsResponse.questionContent(questionContent);
+            ent.add(answerDetailsResponse);
+        }
+
+        return new ResponseEntity<List<AnswerDetailsResponse>>(ent, HttpStatus.OK);
     }
 }

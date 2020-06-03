@@ -44,6 +44,9 @@ public class AnswerService {
 
         UserEntity userEntity =userDao.getUserByUserName(userAuth.getUser().getUserName());
         answer.setUser(userEntity);
+        answer.setQuestion_id(questions.getId());
+        System.out.println(answer.getQuestion_id());
+//        System.out.println(answer.getUuid());
         return answerDao.createAnswer(answer);
     }
 
@@ -96,7 +99,25 @@ public class AnswerService {
     }
 
 
-    public List<Answer> getAllAnswer() {
-        return answerDao.getAllAnswer();
+    public List<Answer> getAllAnswer(final String questionUuid,final String authorization) throws AuthorizationFailedException, AnswerNotFoundException, InvalidQuestionException {
+        UserAuth userAuth = userDao.getUserAuthByToken(authorization);
+        Questions questionsEntity=  questionsDao.questionById(questionUuid);
+        if(userAuth == null){
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+        }
+        if(userAuth.getLogoutAt() != null){
+            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit an answer");
+        }
+
+        if(questionsEntity == null){
+            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
+        }
+        List<Answer> answerEntity = answerDao.getAnswersByQuestionId(questionsEntity.getId());
+        return answerEntity;
+    }
+
+    public String  getQuestionContent(final String questionUuid){
+        Questions questionsEntity =  questionsDao.questionById(questionUuid);
+        return questionsEntity.getContent();
     }
 }

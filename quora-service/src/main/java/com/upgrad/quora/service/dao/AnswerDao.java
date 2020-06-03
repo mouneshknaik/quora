@@ -36,4 +36,12 @@ public class AnswerDao {
         entityManager.remove(answerEntity);
         return answerEntity;
     }
+    public List<Answer> getAnswersByQuestionId(final Integer questionId){
+        try {
+            return entityManager.createNamedQuery("getAnswersByQuestionId", Answer.class)
+                    .setParameter("question_id",questionId ).getResultList();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
 }
